@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.6.0/css/all.min.css"
+        integrity="sha512-Kc323vGBEqzTmouAECnVceyQqyqdsSiqLQISBL29aUW4U/M7pSPA/gEUZQqv1cwx4OnYxTxve5UMg5GT6L4JJg=="
+        crossorigin="anonymous" referrerpolicy="no-referrer"   />
+</head>
+<style>
+    body {
+        background-color: black;
+        color: white;
+        font-family: arial;
+        text-align: center;
+    }
+
+    .fa-solid {
+        color: orange;
+        border-radius: 50px;
+        font-size: 100px;
+    }
+
+    .but {
+        background-color: black;
+        border: 2px solid white;
+        border-radius: 90px;
+        padding: 30px 30px;
+        margin-left: 20px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .heading {
+        font-size: 50px;
+    }
+
+    .resetScore,
+    .autoPlay {
+        font-size: 15px;
+        padding-top: 10px;
+        padding-bottom: 10px;
+        padding-left: 22px;
+        padding-right: 22px;
+        cursor: pointer;
+        border: none;
+    }
+
+    .res,
+    .result,
+    .your-scoreboard,
+    .computer-scoreboard {
+        font-family: arial;
+        font-size: 20px;
+        margin-top: 20px;
+    }
+
+    .result {
+        font-weight: 900;
+    }
+
+    .go {
+        background-color: rgb(165, 163, 163);
+        border: none;
+    }
+</style>
+
+<body>
+    <h4 class="heading">Rock Paper Scissors</h4>
+    <button class="but gameRock"><i class="fa-solid fa-hand-fist"></i></button>
+    <button class="but gamePaper"><i class="fa-solid fa-hand"></i></button>
+    <button class="but gameScissors"><i class="fa-solid fa-hand-scissors"></i></button>
+
+    <br><br>
+
+    <p class="res"></p>
+    <p class="result"></p>
+    <p class="your-scoreboard"></p>
+    <p class="computer-scoreboard"></p>
+
+    <button class="resetScore">Reset Score</button>
+
+    <button class="autoPlay">Auto Play</button>
+
+    <script>
+        const score = JSON.parse(localStorage.getItem('score')) || {
+            wins: 0,
+            loses: 0,
+            ties: 0
+        };
+
+        updateScore();
+
+        document.body.addEventListener('keydown', () => {
+            if (event.key === 'r') {
+                playgame('Rock');
+            }
+            else if (event.key === 'p') {
+                playgame('Paper');
+            }
+            else if (event.key === 's') {
+                playgame('Scissors');
+            }
+        });
+
+        document.querySelector('.resetScore').addEventListener('click', () => {
+            score.wins = 0;
+            score.loses = 0;
+            score.ties = 0;
+            localStorage.removeItem('score');
+            updateScore();
+        });
+
+        document.querySelector('.autoPlay').addEventListener('click', () => {
+            autoPlay();
+        });
+
+        let isAutoPlaying = false;
+        let intervalId;
+
+        function autoPlay() {
+            if (!isAutoPlaying) {
+                intervalId = setInterval(() => {
+                    const playerMove = pickComputerMove();
+                    playgame(playerMove);
+                }, 2000);
+                isAutoPlaying = true;
+                document.querySelector('.autoPlay').classList.add('go');
+            }
+            else {
+                clearInterval(intervalId);
+                isAutoPlaying = false;
+                document.querySelector('.autoPlay').classList.remove('go');
+            }
+        }
+
+        document.querySelector('.gameRock').addEventListener('click', () => {
+            playgame('Rock');
+        });
+
+        document.querySelector('.gamePaper').addEventListener('click', () => {
+            playgame('Paper');
+        });
+
+        document.querySelector('.gameScissors').addEventListener('click', () => {
+            playgame('Scissors');
+        });
+
+        function playgame(playerMove) {
+            let result = '';
+            const computerMove = pickComputerMove();
+            let pMove = '';
+            let cMove = '';
+
+            if (playerMove === 'Rock') {
+                pMove = 'hand-fist';
+            }
+            else if (playerMove === 'Paper') {
+                pMove = 'hand';
+            }
+            else {
+                pMove = 'hand-scissors';
+            }
+
+            if (computerMove === 'Rock') {
+                cMove = 'hand-fist';
+            }
+            else if (computerMove === 'Paper') {
+                cMove = 'hand';
+            }
+            else {
+                cMove = 'hand-scissors';
+            }
+
+
+
+            if (computerMove === playerMove) {
+                result = 'Tie';
+                score.ties++;
+            }
+            else if ((computerMove === 'Rock') && (playerMove === "Paper")) {
+                result = "You Win";
+                score.wins++;
+            }
+            else if ((computerMove === 'Rock') && (playerMove === "Scissors")) {
+                result = "You Lose";
+                score.loses++;
+            }
+            else if ((computerMove === 'Scissors') && (playerMove === "Paper")) {
+                result = "You Lose";
+                score.loses++;
+            }
+            else if ((computerMove === 'Scissors') && (playerMove === "Rock")) {
+                result = "You Win";
+                score.wins++;
+            }
+            else if ((computerMove === 'Paper') && (playerMove === "Rock")) {
+                result = "You Lose";
+                score.loses++;
+            }
+            else if ((computerMove === 'Paper') && (playerMove === "Scissors")) {
+                result = "You Win";
+                score.wins++;
+            }
+            localStorage.setItem(score, JSON.stringify(score));
+            updateScore();
+            document.querySelector('.your-scoreboard').innerHTML = `You:` + ` <i class="fa-solid fa-${pMove}">`;
+            document.querySelector('.computer-scoreboard').innerHTML = `Computer:` + ` <i class="fa-solid fa-${cMove}">`;
+            document.querySelector('.result').innerHTML = `${result}`;
+            return;
+        }
+
+        function updateScore() {
+            document.querySelector('.res').innerHTML = `Wins:${score.wins}, Losses:${score.loses}, Ties:${score.ties}`;
+
+        }
+
+        function pickComputerMove() {
+            let computerMove = '';
+            const randomNumber = Math.random();
+            if (randomNumber >= 0 && randomNumber < (1 / 3)) {
+                computerMove = 'Paper';
+            }
+            else if (randomNumber >= (1 / 3) && randomNumber < (2 / 3)) {
+                computerMove = 'Rock';
+            }
+            else if (randomNumber >= (2 / 3) && randomNumber < 1) {
+                computerMove = 'Scissors';
+            }
+
+            return computerMove;
+        }
+
+
+
+
+    </script>
+</body>
+
+</html>
